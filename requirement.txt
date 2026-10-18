@@ -5,3 +5,6 @@ langchain-groq
 python-dotenv
 langchain-google-genai
 langchain-nvidia-ai-endpoints
+
+langgraph
+langsmith
