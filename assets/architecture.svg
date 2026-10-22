@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" width="100%" height="380">
+  <defs>
+    <linearGradient id="boxBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+
+    <linearGradient id="cyanLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="50%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+
+    <filter id="nodeGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <style>
+      .arch-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-weight: 700; fill: #f8fafc; font-size: 13.5px; }
+      .arch-sub { font-family: "JetBrains Mono", Consolas, monospace; fill: #94a3b8; font-size: 11px; }
+      .arch-code { font-family: "JetBrains Mono", Consolas, monospace; fill: #38bdf8; font-size: 10.5px; font-weight: 600; }
+      .pulse-packet {
+        animation: flowPacket 3.2s linear infinite;
+      }
+      .pulse-packet-rev {
+        animation: flowPacketRev 3.2s linear infinite;
+      }
+      @keyframes flowPacket {
+        0% { stroke-dashoffset: 240; }
+        100% { stroke-dashoffset: 0; }
+      }
+      @keyframes flowPacketRev {
+        0% { stroke-dashoffset: 0; }
+        100% { stroke-dashoffset: 240; }
+      }
+      .node-card {
+        transition: all 0.3s ease;
+      }
+    </style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect width="880" height="380" rx="14" fill="#0b1120" stroke="#1e293b" stroke-width="1.5" />
+
+  <!-- Section Backgrounds -->
+  <rect x="25" y="55" width="230" height="300" rx="10" fill="#0f172a" stroke="#334155" stroke-dasharray="4,4" opacity="0.7" />
+  <text x="140" y="80" text-anchor="middle" fill="#64748b" class="arch-sub" font-weight="700">1. ORCHESTRATION &amp; REASONING</text>
+
+  <rect x="285" y="55" width="280" height="300" rx="10" fill="#0f172a" stroke="#334155" stroke-dasharray="4,4" opacity="0.7" />
+  <text x="425" y="80" text-anchor="middle" fill="#64748b" class="arch-sub" font-weight="700">2. LANGGRAPH STATE MACHINE</text>
+
+  <rect x="595" y="55" width="260" height="300" rx="10" fill="#0f172a" stroke="#334155" stroke-dasharray="4,4" opacity="0.7" />
+  <text x="725" y="80" text-anchor="middle" fill="#64748b" class="arch-sub" font-weight="700">3. DISTRIBUTED MCP SERVERS</text>
+
+  <!-- Connective Data Cables -->
+  <!-- Cable 1: User to LLM -->
+  <line x1="140" y1="165" x2="140" y2="195" stroke="#334155" stroke-width="2" />
+  
+  <!-- Cable 2: LLM to LangGraph -->
+  <path d="M 225,245 L 315,145" stroke="#06b6d4" stroke-width="2" stroke-dasharray="8,6" class="pulse-packet" />
+
+  <!-- Cable 3: Graph to MCP Client Gateway -->
+  <path d="M 525,200 L 620,135" stroke="#a855f7" stroke-width="2" stroke-dasharray="8,6" class="pulse-packet" />
+  <path d="M 525,200 L 620,245" stroke="#10b981" stroke-width="2" stroke-dasharray="8,6" class="pulse-packet" />
+
+  <!-- NODE 1: User Query -->
+  <g transform="translate(45, 105)" class="node-card">
+    <rect width="190" height="60" rx="8" fill="url(#boxBg)" stroke="#38bdf8" stroke-width="1.5" />
+    <circle cx="25" cy="30" r="12" fill="#0369a1" />
+    <text x="25" y="34" text-anchor="middle" fill="#e0f2fe" font-size="13">&#x1F464;</text>
+    <text x="48" y="27" class="arch-title">User Goal / Query</text>
+    <text x="48" y="44" class="arch-code">"what is (3+5) * 12?"</text>
+  </g>
+
+  <!-- NODE 2: LLM Foundation Engine -->
+  <g transform="translate(45, 200)" class="node-card">
+    <rect width="190" height="90" rx="8" fill="url(#boxBg)" stroke="#818cf8" stroke-width="1.5" />
+    <circle cx="25" cy="30" r="12" fill="#3730a3" />
+    <text x="25" y="34" text-anchor="middle" fill="#e0e7ff" font-size="13">&#x1F9E0;</text>
+    <text x="48" y="28" class="arch-title">LLM Engine</text>
+    <text x="48" y="46" class="arch-sub">NVIDIA Nemotron 120B</text>
+    <text x="48" y="62" class="arch-sub">Google Gemini / Groq</text>
+    <text x="48" y="78" class="arch-code">Multi-Model Binding</text>
+  </g>
+
+  <!-- NODE 3: LangGraph Agent Core -->
+  <g transform="translate(305, 105)" class="node-card">
+    <rect width="240" height="90" rx="8" fill="url(#boxBg)" stroke="#6366f1" stroke-width="1.5" />
+    <circle cx="25" cy="30" r="12" fill="#312e81" />
+    <text x="25" y="34" text-anchor="middle" fill="#e0e7ff" font-size="13">&#x2699;&#xFE0F;</text>
+    <text x="48" y="28" class="arch-title">StateGraph Cycle</text>
+    <text x="48" y="46" class="arch-sub">State: Annotated[list, add_messages]</text>
+    <text x="48" y="62" class="arch-sub">Router: tools_condition</text>
+    <text x="48" y="78" class="arch-code">START &#x2192; LLM &#x2194; Tools &#x2192; END</text>
+  </g>
+
+  <!-- NODE 4: Memory Checkpointer -->
+  <g transform="translate(305, 225)" class="node-card">
+    <rect width="240" height="70" rx="8" fill="url(#boxBg)" stroke="#f59e0b" stroke-width="1.5" />
+    <circle cx="25" cy="32" r="12" fill="#78350f" />
+    <text x="25" y="36" text-anchor="middle" fill="#fef3c7" font-size="13">&#x1F4BE;</text>
+    <text x="48" y="30" class="arch-title">State Memory</text>
+    <text x="48" y="48" class="arch-sub">MemorySaver() Checkpointing</text>
+    <text x="48" y="64" class="arch-code">Cross-turn Session Retention</text>
+  </g>
+
+  <!-- NODE 5: MCP Stdio Math Server -->
+  <g transform="translate(615, 105)" class="node-card">
+    <rect width="220" height="85" rx="8" fill="url(#boxBg)" stroke="#a855f7" stroke-width="1.5" />
+    <circle cx="25" cy="30" r="12" fill="#581c87" />
+    <text x="25" y="34" text-anchor="middle" fill="#f3e8ff" font-size="13">&#x2795;</text>
+    <text x="48" y="28" class="arch-title">MCP Math Server</text>
+    <text x="48" y="46" class="arch-sub">Transport: stdio subprocess</text>
+    <text x="48" y="62" class="arch-code">add, sub, mul, div</text>
+    <text x="48" y="76" class="arch-sub">Deterministic Python Execution</text>
+  </g>
+
+  <!-- NODE 6: MCP Streamable-HTTP Weather Server -->
+  <g transform="translate(615, 215)" class="node-card">
+    <rect width="220" height="85" rx="8" fill="url(#boxBg)" stroke="#10b981" stroke-width="1.5" />
+    <circle cx="25" cy="30" r="12" fill="#064e3b" />
+    <text x="25" y="34" text-anchor="middle" fill="#d1fae5" font-size="13">&#x26C5;</text>
+    <text x="48" y="28" class="arch-title">MCP Weather Server</text>
+    <text x="48" y="46" class="arch-sub">Transport: streamable-http (:8000)</text>
+    <text x="48" y="62" class="arch-code">get_weather, get_forecast</text>
+    <text x="48" y="76" class="arch-sub">FastMCP + Uvicorn Session</text>
+  </g>
+
+  <!-- Bottom Legend -->
+  <g transform="translate(30, 358)">
+    <circle cx="8" cy="4" r="4" fill="#06b6d4" />
+    <text x="20" y="8" fill="#94a3b8" font-size="11" class="arch-sub">Async Tool Invocation</text>
+
+    <circle cx="200" cy="4" r="4" fill="#a855f7" />
+    <text x="212" y="8" fill="#94a3b8" font-size="11" class="arch-sub">Stdio IPC</text>
+
+    <circle cx="340" cy="4" r="4" fill="#10b981" />
+    <text x="352" y="8" fill="#94a3b8" font-size="11" class="arch-sub">Streamable HTTP / SSE</text>
+
+    <circle cx="530" cy="4" r="4" fill="#f59e0b" />
+    <text x="542" y="8" fill="#94a3b8" font-size="11" class="arch-sub">Graph State Persistence</text>
+  </g>
+</svg>

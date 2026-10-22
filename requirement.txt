@@ -6,6 +6,8 @@ python-dotenv
 langchain-google-genai
 langchain-nvidia-ai-endpoints
 langchain-tavily
+langchain-mcp-adapters
+mcp
 
 langgraph
 langsmith
