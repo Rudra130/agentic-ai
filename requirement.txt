@@ -1,13 +1,29 @@
+#LLM providers
 langchain
 langchain-community
+langchain-core
 langchain-openai
 langchain-groq
 python-dotenv
 langchain-google-genai
 langchain-nvidia-ai-endpoints
 langchain-tavily
+
+#MCP server
 langchain-mcp-adapters
 mcp
 
+#pdf loader 
+pdfplumber
+pypdf
+pymupdf
+tqdm
+
+#langgraph and observebility
 langgraph
 langsmith
+
+#embedding and vector store db
+sentence-transformers
+faiss-cpu
+chromadb
