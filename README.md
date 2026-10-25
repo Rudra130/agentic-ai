@@ -9,15 +9,18 @@
 [![LangGraph](https://img.shields.io/badge/LangGraph-v1.2.15-indigo?style=for-the-badge&logo=diagram-next&logoColor=white)](https://langchain-ai.github.io/langgraph/)
 [![Model Context Protocol](https://img.shields.io/badge/MCP-FastMCP_v1.30-purple?style=for-the-badge&logo=anthropic&logoColor=white)](https://modelcontextprotocol.io)
 [![NVIDIA AI](https://img.shields.io/badge/NVIDIA-Nemotron_120B-76B900?style=for-the-badge&logo=nvidia&logoColor=white)](https://build.nvidia.com)
+[![ChromaDB](https://img.shields.io/badge/Vector_DB-ChromaDB-orange?style=for-the-badge&logo=databricks&logoColor=white)](https://www.trychroma.com/)
+[![Sentence Transformers](https://img.shields.io/badge/Embeddings-Sentence--Transformers-yellow?style=for-the-badge&logo=huggingface&logoColor=white)](https://huggingface.co/sentence-transformers)
 [![Package Manager](https://img.shields.io/badge/Package_Manager-uv-DE5FE9?style=for-the-badge&logo=astral&logoColor=white)](https://astral.sh/uv)
 
 <p align="center">
-  <b>A production-grade, stateful autonomous agent architecture combining LangChain 1.4+, LangGraph cyclic state machines, and distributed multi-transport Model Context Protocol (MCP) microservices.</b>
+  <b>A production-grade, stateful autonomous agent architecture combining LangChain 1.4+, LangGraph cyclic state machines, distributed multi-transport Model Context Protocol (MCP) microservices, and end-to-end Retrieval-Augmented Generation (RAG).</b>
 </p>
 
 [Explore Architecture](#-system-architecture) •
 [Quickstart](#-quickstart--installation) •
 [MCP Ecosystem](#-model-context-protocol-mcp-microservices) •
+[RAG Pipeline](#-retrieval-augmented-generation-rag-pipeline) •
 [Notebook Curriculum](#-educational-notebook-modules) •
 [Troubleshooting](#-troubleshooting--faq)
 
@@ -33,6 +36,7 @@
 2. **Distributed Microservice Tooling via MCP**: Connecting to isolated tools across multiple transport layers (**stdio IPC subprocesses** and **streamable HTTP / SSE web servers**) through Anthropic's **Model Context Protocol (FastMCP)**.
 3. **Multi-Model Orchestration**: Interfacing seamlessly with state-of-the-art reasoning backends, including **NVIDIA Nemotron 120B**, **Google Gemini 3.8 Flash**, **OpenAI GPT-4**, and **Groq Llama 3**.
 4. **Resilient Middleware & Enterprise Schemas**: Enforcing strict Pydantic structured output models, PII masking, safety guardrails, and conversation memory retention across long sessions.
+5. **Production Retrieval-Augmented Generation (RAG)**: Ingesting multi-format unstructured documents (PDFs, text corpora), semantic chunking with metadata enrichment, generating dense embeddings via **SentenceTransformers**, persisting in **ChromaDB**, and executing normalized similarity retrieval for grounded LLM generation.
 
 ---
 
@@ -100,6 +104,15 @@ agentic-ai/
 │   ├── client.py                 # MultiServerMCPClient orchestrating stdio & HTTP tools
 │   ├── mathserver.py             # FastMCP stdio math server (add, sub, mul, div)
 │   └── weather.py                # FastMCP streamable-http weather service on Uvicorn (:8000)
+│
+├── 📁 tr-rag/                     # Production Document Ingestion & RAG Subsystem
+│   ├── 📁 data/                  # Multimodal corpus & vector persistence
+│   │   ├── 📁 pdf/               # Source PDF corpus (MCP specs, offer letters, resumes)
+│   │   ├── 📁 text_files/        # Text corpora & structured notes
+│   │   └── 📁 vector_store/      # Persistent ChromaDB sqlite database & HNSW index
+│   └── 📁 notebook/              # RAG Architectural Notebooks
+│       ├── document.ipynb        # Ingestion pipeline: TextLoader, DirectoryLoader & metadata
+│       └── pdf_loader.ipynb      # End-to-end RAG: PyPDF/PyMuPDF, Chunking, SentenceTransformers, ChromaDB & Retriever
 │
 ├── 📁 src/agentic_ai/             # Project package source root
 │   └── __init__.py               # CLI entrypoint definition
@@ -251,6 +264,79 @@ The notebooks in this repository provide a progressive, hands-on masterclass in 
 
 </details>
 
+<details>
+<summary><b>🔍 Module 3: Production Retrieval-Augmented Generation (RAG) (<code>tr-rag/</code>)</b></summary>
+<br/>
+
+- **`document.ipynb`**:
+  - Foundational data ingestion patterns with LangChain core.
+  - Creating LangChain `Document` abstractions with custom metadata schemas (authors, dates, source tags).
+  - Ingesting raw documentation with `TextLoader`.
+  - Batch directory ingestion using `DirectoryLoader` with UTF-8 encoding and regex file globbing (`**/*.txt`, `**/*.pdf`).
+
+- **`pdf_loader.ipynb`**:
+  - Full end-to-end multi-PDF RAG pipeline.
+  - Multi-document loading across diverse structures (resumes, offer letters, technical specifications) with `PyPDFLoader` & `PyMuPDFLoader`.
+  - Semantic chunking with `RecursiveCharacterTextSplitter` (`chunk_size=1000`, `chunk_overlap=200`, hierarchical separators).
+  - Building the `EmbeddingManager` wrapping HuggingFace `SentenceTransformer('all-MiniLM-L6-v2')` generating 384-dimensional dense vectors.
+  - Designing the `VectorStore` class managing persistent ChromaDB collections (`chromadb.PersistentClient`).
+  - Implementing the `RAGRetriever` with on-the-fly query embeddings, distance-to-similarity normalization, score thresholding, and top-k ranking.
+  - Grounded question-answering and synthesis across retrieved document chunks.
+
+</details>
+
+---
+
+## 🔍 Retrieval-Augmented Generation (RAG) Pipeline
+
+The repository includes a dedicated **multimodal RAG subsystem (`tr-rag/`)** engineered for high-accuracy document ingestion, semantic chunking, dense vector indexing, and context-grounded LLM synthesis:
+
+```mermaid
+graph LR
+    classDef ingestNode fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#fff;
+    classDef chunkNode fill:#312e81,stroke:#c084fc,stroke-width:2px,color:#fff;
+    classDef embedNode fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff;
+    classDef storeNode fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#fff;
+    classDef llmNode fill:#1c1917,stroke:#f59e0b,stroke-width:2px,color:#fff;
+
+    Docs[📄 Unstructured Corpus<br/>PDFs & Text Files]:::ingestNode --> Loader[📥 Document Loaders<br/>PyMuPDF / PyPDF / TextLoader]:::ingestNode
+    Loader --> Splitter[✂️ Recursive Splitter<br/>Chunk: 1000, Overlap: 200]:::chunkNode
+    Splitter --> Embedder[⚡ SentenceTransformers<br/>all-MiniLM-L6-v2 384-d]:::embedNode
+    Embedder --> VectorDB[(🗄️ ChromaDB Vector Store<br/>Persistent SQLite + HNSW)]:::storeNode
+    
+    UserQuery([🔎 User Query]):::ingestNode --> QueryEmbed[⚡ Query Embedding]:::embedNode
+    QueryEmbed --> Retriever[🎯 RAGRetriever<br/>Normalized Similarity & Top-K]:::storeNode
+    VectorDB -.-> Retriever
+    Retriever --> ContextAug[📝 Augmented Prompt<br/>Query + Retrieved Chunks]:::chunkNode
+    ContextAug --> LLM[🧠 LLM Reasoning & Answer<br/>Nemotron 120B / Gemini / GPT-4]:::llmNode
+```
+
+### Architectural Workflow
+
+1. **Document Ingestion Layer**:
+   - `PyMuPDFLoader` & `PyPDFLoader`: High-throughput PDF extraction capturing full text, page numbers, author, creation dates, and source file metadata.
+   - `DirectoryLoader`: Automated recursive directory crawling with custom regex patterns (`**/*.pdf`, `**/*.txt`).
+
+2. **Semantic Text Chunking**:
+   - `RecursiveCharacterTextSplitter` divides documents into `chunk_size=1000` with `chunk_overlap=200`.
+   - Respects natural paragraph and sentence boundaries using hierarchical delimiters: `["\n\n", "\n", " ", ""]`.
+
+3. **Dense Vector Embeddings (`EmbeddingManager`)**:
+   - Uses HuggingFace's **`all-MiniLM-L6-v2`** (`sentence-transformers`), mapping document text into compact, highly expressive 384-dimensional vector spaces.
+   - Batch encodes with progress monitoring and returns optimized NumPy arrays.
+
+4. **Persistent Vector Store (`VectorStore`)**:
+   - Backed by **`chromadb.PersistentClient`**, persisting vector embeddings, chunk text, and metadata directly to disk (`tr-rag/data/vector_store/`).
+   - Assigns unique document UUIDs (`doc_<uuid>_<index>`) and builds an HNSW index for ultra-fast nearest-neighbor lookups.
+
+5. **Similarity Retrieval Engine (`RAGRetriever`)**:
+   - Computes query embeddings in real time and queries ChromaDB for top-K matching records.
+   - Accurately converts vector distance metrics to similarity scores (handling squared L2 distance: $\text{similarity} = 1.0 - \frac{\text{dist}}{2.0}$ and cosine distance: $\text{similarity} = 1.0 - \text{dist}$).
+   - Filters results by `score_threshold` and ranks documents by similarity confidence.
+
+6. **Context Augmentation & LLM Generation**:
+   - Formats retrieved chunks into context windows, enabling LLMs (e.g. Gemini, Nemotron, or GPT-4) to answer queries with precise citations and zero hallucination.
+
 ---
 
 ## 🛠 Tech Stack & Core Libraries
@@ -260,6 +346,10 @@ The notebooks in this repository provide a progressive, hands-on masterclass in 
 | **LangChain Core** (`>=1.4.5`) | LLM Abstraction | Model abstraction, message protocols, structured schemas |
 | **LangGraph** (`>=1.2.15`) | Cyclic Graph Engine | Stateful agent graphs, branch routing, conditional edges |
 | **Model Context Protocol** (`>=1.30.0`) | Tool Microservices | Standardized RPC for AI tools via `stdio` & `streamable-http` |
+| **ChromaDB** (`>=0.5.0`) | Vector Store | Persistent vector database, HNSW indexing, SQLite backend |
+| **Sentence-Transformers** (`>=3.0.0`) | Dense Embeddings | `all-MiniLM-L6-v2` generating 384-dimensional vector representations |
+| **PyMuPDF & PyPDF** | Document Ingestion | High-speed PDF parsing, text extraction, and metadata indexing |
+| **FAISS** (`faiss-cpu`) | Vector Search | Highly optimized vector similarity search engine |
 | **langchain-mcp-adapters** | Bridge Layer | Converts FastMCP tool catalogs into LangChain/LangGraph tools |
 | **ChatNVIDIA** | Reasoning Engine | NVIDIA NIM integration for `nemotron-3.5-super-vl-120b-a12b` |
 | **Tavily Search** | Web Retrieval | Real-time AI-optimized search engine with domain filtering |
